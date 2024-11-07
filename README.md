@@ -4,7 +4,7 @@
 ![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-Este projeto é uma API RESTful contruída com **Python** e **Django Rest Framework** para pesquisas de satisfação e geração de relatórios.
+Este projeto é uma API RESTful contruída com **Python** e **Django Rest Framework** para pesquisas de clima organizacional e geração de relatórios.
 
 ## Como usar o projeto
 
