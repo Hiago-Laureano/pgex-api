@@ -1,8 +1,8 @@
 from pytest import fixture, mark
 from datetime import datetime
 from rest_framework.test import APIClient
-from pgex_api.serializers import SurveySerializer
-from pgex_api.models import User, Survey
+from pgex_api.serializers import SurveySerializer, ResponseSerializer
+from pgex_api.models import User, Survey, Response
 
 @fixture
 def data_post():
@@ -113,10 +113,8 @@ def test_post_respond_success(models):
             "survey": models.survey.id
         }
     response = client.post("/api/v1/surveys/1/respond/", data_response, format="json")
-    expected_data = {**data_response,
-        'created': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        'updated': datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        }
+    serializer = ResponseSerializer(Response.objects.filter(id = 1).first())
+    expected_data = serializer.data
     assert response.status_code == 201
     assert response.json() == expected_data
 

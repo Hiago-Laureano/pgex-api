@@ -1,13 +1,14 @@
 from pytest import fixture, mark
 from rest_framework.test import APIClient
 
-from pgex_api.models import User, Survey
+from pgex_api.models import User, Survey, Response
 
 @fixture
 def models():
     class Models():
         survey1 = Survey.objects.create(name = "name1", active = False, n_questions = 1, questions = {"title": [{'id': 1, 'question': 'test_question_0', 'is_descriptive': False}]})
         survey2 = Survey.objects.create(name = "name2", n_questions = 1, questions = {"title": [{'id': 1, 'question': 'test_question_0', 'is_descriptive': False}]})
+        response = Response.objects.create(survey = survey1, responses = {"1": "test_response"})
         normal_user = User.objects.create_user(email="test1@test.com", password="12345", first_name="Test1", last_name="T3")
         staff_user = User.objects.create_user(email="test2@test.com", password="12345", first_name="Test2", last_name="T2", is_staff=True)
         superuser = User.objects.create_superuser(email="test3@test.com", password="12345", first_name="Test3", last_name="T1")
@@ -80,3 +81,27 @@ def test_get_specific_survey_active_success(models):
         }
     assert response.status_code == 200
     assert response.json() == data
+
+@mark.django_db
+def test_get_validation_of_confirmation_code_is_successful_with_valid_code(models):
+    client = APIClient()
+    client.force_authenticate(user=models.staff_user)
+    response = client.get(f"/api/v1/surveys/{models.response.survey.id}/confirmation/?cc={models.response.confirmation_code}")
+    assert response.status_code == 200
+    assert response.json() == {"valid": True}
+
+@mark.django_db
+def test_get_validation_of_confirmation_code_is_failed_without_url_parameter(models):
+    client = APIClient()
+    client.force_authenticate(user=models.staff_user)
+    response = client.get(f"/api/v1/surveys/{models.response.survey.id}/confirmation/")
+    assert response.status_code == 400
+    assert list(response.json().keys()) == ["detail"]
+
+@mark.django_db
+def test_get_validation_of_confirmation_code_is_successful_with_no_valid_code(models):
+    client = APIClient()
+    client.force_authenticate(user=models.staff_user)
+    response = client.get(f"/api/v1/surveys/{models.response.survey.id}/confirmation/?cc=123")
+    assert response.status_code == 200
+    assert response.json() == {"valid": False}

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from .services import random_code
 
 class CustomUserManager(BaseUserManager):
     def _create_user(self, email, password, first_name, last_name, **extra_fields):
@@ -83,3 +84,4 @@ class Survey(Base):
 class Response(Base):
     responses = models.JSONField() # JSON with body == {1: 5, 2: "text"} keys are ids of questions
     survey = models.ForeignKey(Survey, on_delete = models.CASCADE, related_name = "responses")
+    confirmation_code = models.CharField(max_length = 100, default = random_code)

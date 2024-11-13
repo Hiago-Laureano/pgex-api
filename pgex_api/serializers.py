@@ -62,9 +62,13 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "survey",
             "responses",
+            "confirmation_code",
             "created",
             "updated"
         ]
+        extra_kwargs = {
+            "confirmation_code": {"read_only": True}
+        }
     def validate_survey(self, value):
         if(value.active):
             if(not value.active_until):
