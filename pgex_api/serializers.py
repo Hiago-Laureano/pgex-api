@@ -3,7 +3,7 @@ from .models import Survey, Response
 from datetime import datetime
 
 class SurveySerializer(serializers.ModelSerializer):
-
+    active_until = serializers.DateTimeField(format = "%d/%m/%Y", required = False, allow_null = True)
     class Meta:
         model = Survey
         fields = [
@@ -32,7 +32,7 @@ class SurveySerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
-        if(validated_data["questions"]):
+        if(validated_data.get("questions")):
             validated_data["n_questions"] = self.count_questions(validated_data["questions"])
         return super().update(instance, validated_data)
 
@@ -76,6 +76,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             elif(value.active_until > datetime.now() and value.active):
                 return value
         value.active = False
+        value.save()
         raise serializers.ValidationError("A pesquisa não está mais aberta")
 
     def validate_responses(self, value):
@@ -87,7 +88,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         for i in survey_target.questions.values():
             for j in i:
                 list_ids_questions.append(str(j["id"]))
-        if(list_ids_questions != list(value.keys())):
+        if(sorted(list_ids_questions) != sorted(list(value.keys()))):
             raise serializers.ValidationError("Os ids das perguntas não estão batendo com os das respostas")
         if(len(value) == survey_target.n_questions):
             return value
