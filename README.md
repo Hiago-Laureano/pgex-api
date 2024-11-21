@@ -160,4 +160,22 @@ CAMPOS DE /api/v1/surveys/{id}/respond/ = [
     created[data] <-- apenas GET
     updated[data] <-- apenas GET
 ]
+
+GET /api/v1/surveys/{id}/confirmation/?cc={código} - Confirmar código de participação em uma pesquisa. Note que é necessário informar o parâmetro de URL "cc" com o código [permissão: apenas membros da equipe]
+
+CAMPOS DE /api/v1/surveys/{id}/confirmation/ = [
+    valid[booleano] <-- apenas GET
+]
+
+GET /api/v1/surveys/{id}/json/ - Obter um arquivo JSON com as perguntas de uma pesquisa [permissão: apenas membros da equipe]
+
+CAMPOS DE /api/v1/surveys/{id}/json/ = [
+    link[texto com o link do arquivo] <-- apenas GET
+]
+
+GET /api/v1/surveys/{id}/report/ - Obter um relatório em HTML de uma pesquisa [permissão: apenas membros da equipe]
+
+CAMPOS DE /api/v1/surveys/{id}/report/ = [
+    link[texto com o link do arquivo] <-- apenas GET
+]
 ```
