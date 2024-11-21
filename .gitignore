@@ -5,6 +5,7 @@ venv/
 pgex_api/migrations/*
 !pgex_api/migrations/__init__.py
 media/
+media_test/
 .pytest_cache
 test_database
 
