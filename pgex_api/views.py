@@ -2,9 +2,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from root_api.settings import MEDIA_URL
 from .permissions import *
 from .models import Survey, Response as ResponseModel
 from .serializers import SurveySerializer, ResponseSerializer
+from . services import export_questions_JSON, create_report_HTML
 
 class SurveyViewSet(viewsets.ModelViewSet):
     serializer_class = SurveySerializer
@@ -37,5 +39,18 @@ class SurveyViewSet(viewsets.ModelViewSet):
                 return Response({"valid": False}, status = status.HTTP_200_OK)
         else:
             return Response({"detail": 'Parâmetro de URL "cc" inexistente'}, status = status.HTTP_400_BAD_REQUEST)
+    @action(detail = True, methods = ["get"])
+    def json(self, request, pk = None):
+        survey = self.get_object()
+        file_name = export_questions_JSON(survey.questions, survey.name)
+        return Response({"link": f"{MEDIA_URL}{file_name}"}, status = status.HTTP_200_OK)
+    @action(detail = True, methods = ["get"])
+    def report(self, request, pk = None):
+        survey = self.get_object()
+        serializer = ResponseSerializer(ResponseModel.objects.filter(survey = survey.id), many = True)
+        if(serializer.data):
+            file_name = create_report_HTML(survey, serializer.data)
+            return Response({"link": f"{MEDIA_URL}{file_name}"}, status = status.HTTP_200_OK)
+        return Response({"detail": "Não há respostas para gerar um relatório"}, status = status.HTTP_400_BAD_REQUEST)
 
 

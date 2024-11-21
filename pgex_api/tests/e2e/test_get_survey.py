@@ -1,5 +1,7 @@
 from pytest import fixture, mark
 from rest_framework.test import APIClient
+from root_api.settings import MEDIA_URL, BASE_DIR
+import os
 
 from pgex_api.models import User, Survey, Response
 
@@ -8,10 +10,16 @@ def models():
     class Models():
         survey1 = Survey.objects.create(name = "name1", active = False, n_questions = 1, questions = {"title": [{'id': 1, 'question': 'test_question_0', 'is_descriptive': False}]})
         survey2 = Survey.objects.create(name = "name2", n_questions = 1, questions = {"title": [{'id': 1, 'question': 'test_question_0', 'is_descriptive': False}]})
-        response = Response.objects.create(survey = survey1, responses = {"1": "test_response"})
+        response = Response.objects.create(survey = survey1, responses = {"1": 4})
+        response2 = Response.objects.create(survey = survey1, responses = {"1": 5})
         normal_user = User.objects.create_user(email="test1@test.com", password="12345", first_name="Test1", last_name="T3")
         staff_user = User.objects.create_user(email="test2@test.com", password="12345", first_name="Test2", last_name="T2", is_staff=True)
         superuser = User.objects.create_superuser(email="test3@test.com", password="12345", first_name="Test3", last_name="T1")
+        def removeFile(self, file):
+            try:
+                os.remove(f"{BASE_DIR}/{MEDIA_URL}{file}")
+            except:
+                pass
     models = Models()
     return models
 
@@ -105,3 +113,21 @@ def test_get_validation_of_confirmation_code_is_successful_with_no_valid_code(mo
     response = client.get(f"/api/v1/surveys/{models.response.survey.id}/confirmation/?cc=123")
     assert response.status_code == 200
     assert response.json() == {"valid": False}
+
+@mark.django_db
+def test_get_link_of_json_file_with_questions(models):
+    client = APIClient()
+    client.force_authenticate(user=models.staff_user)
+    response = client.get(f"/api/v1/surveys/{models.survey1.id}/json/")
+    assert response.status_code == 200
+    assert response.json() == {"link": f"{MEDIA_URL}{models.survey1.name}.json"}
+    models.removeFile(f"{models.survey1.name}.json")
+
+@mark.django_db
+def test_get_link_of_report_file_in_HTML(models):
+    client = APIClient()
+    client.force_authenticate(user=models.staff_user)
+    response = client.get(f"/api/v1/surveys/{models.survey1.id}/report/")
+    assert response.status_code == 200
+    assert response.json() == {"link": f"{MEDIA_URL}{models.survey1.name}.html"}
+    models.removeFile(f"{models.survey1.name}.html")
